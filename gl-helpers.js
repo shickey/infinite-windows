@@ -46,30 +46,9 @@
     return shader;
   }
   
-  function orthographicProjection(left, right, bottom, top, near, far) {
-    var lr = 1 / (left - right);
-    var bt = 1 / (bottom - top);
-    var nf = 1 / (near - far);
-    let out = [             -2 * lr,                   0,                 0, 0,
-                                  0,             -2 * bt,                 0, 0,
-                                  0,                   0,            2 * nf, 0,
-                (left + right) * lr, (top + bottom) * bt, (far + near) * nf, 1
-              ];
-    return out;
-  };
-  
-  function identityMatrix() {
-    return [1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1];
-  }
-  
   window.GlHelpers = {
     initShaderProgram,
-    loadShader,
-    orthographicProjection,
-    identityMatrix
+    loadShader
   }
   
 })();

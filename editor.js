@@ -13,7 +13,7 @@ let drawingExists = false;
 let backgroundColor = '#000';
 let penColor = '#fff';
 
-ctx.lineWidth = 2.0;
+ctx.lineWidth = 1.0;
 ctx.lineCap = 'round';
 ctx.lineJoin = 'round';
 
@@ -28,23 +28,27 @@ discardButton.addEventListener('click', function(e) {
 
 sendButton.addEventListener('click', function(e) {
   if (drawingExists) {
-    // Normalize the color representations
-    ctx.fillStyle = backgroundColor;
-    let background = ctx.fillStyle;
-    ctx.fillStyle = penColor;
-    let pen = ctx.fillStyle;
-    
-    drawingsRef.push({
-      points: path,
-      backgroundColor: background,
-      penColor: pen
-    });
-    
-    path = [];
-    drawingExists = false;
-    discardButton.disabled = true;
-    sendButton.disabled = true;
+    window.PointsToDraw = path;
+    window.DrawPointsWithGl();
   }
+  // if (drawingExists) {
+  //   // Normalize the color representations
+  //   ctx.fillStyle = backgroundColor;
+  //   let background = ctx.fillStyle;
+  //   ctx.fillStyle = penColor;
+  //   let pen = ctx.fillStyle;
+    
+  //   drawingsRef.push({
+  //     points: path,
+  //     backgroundColor: background,
+  //     penColor: pen
+  //   });
+    
+  //   path = [];
+  //   drawingExists = false;
+  //   discardButton.disabled = true;
+  //   sendButton.disabled = true;
+  // }
 });
 
 
@@ -86,7 +90,7 @@ canvas.addEventListener('mousedown', function(e) {
     if (!didSelectColor) {
       // Begin drawing
       drawing = true;
-      path = [{x, y}];
+      path = [x, y];
     }
   }
   
@@ -115,13 +119,13 @@ canvas.addEventListener('mousedown', function(e) {
 
 canvas.addEventListener('mousemove', function(e) {
   if (drawing) {
-    path.push({x: e.offsetX, y: e.offsetY});
+    path.push(e.offsetX, e.offsetY);
   }
 });
 
 canvas.addEventListener('mouseup', function(e) {
   if (drawing) {
-    path.push({x: e.offsetX, y: e.offsetY});
+    path.push(e.offsetX, e.offsetY);
     drawing = false;
     drawingExists = true;
     discardButton.disabled = false;
@@ -160,14 +164,14 @@ function draw() {
   
   if (path.length > 1) {
     ctx.beginPath();
-    path.forEach((pt, idx) => {
-      if (idx === 0) {
-        ctx.moveTo(pt.x, pt.y);
+    for (let i = 0; i < path.length; i += 2) {
+      if (i == 0) {
+        ctx.moveTo(path[0], path[1]);
       }
       else {
-        ctx.lineTo(pt.x, pt.y);
+        ctx.lineTo(path[i], path[i + 1]);
       }
-    });
+    }
     ctx.stroke();
   }
   
