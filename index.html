@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Collective Drawing Test</title>
+</head>
+<link rel="stylesheet" type="text/css" href="./main.css">
+<body>
+  
+  <div id="editor-container">
+    <canvas id="editor" width="400" height="600"></canvas>
+    <div class="editor-controls">
+      <button id="discard" disabled>Discard</button>
+      <button id="send" disabled>Submit Your Window</button>
+    </div>
+  </div>
+  
+  <div id="viewer-container">
+    <canvas id="viewer" width="600" height="800"></canvas>
+  </div>
+  
+  <!-- <canvas id="viewer" width="600" height="300"></canvas> -->
+  <!-- <div id="thumbnails"></div> -->
+
+<script src="https://www.gstatic.com/firebasejs/7.14.3/firebase-app.js"></script>
+<!-- <script src="https://www.gstatic.com/firebasejs/7.14.3/firebase-analytics.js"></script> -->
+<script src="https://www.gstatic.com/firebasejs/7.14.3/firebase-database.js"></script>
+<script type="text/javascript">
+  var firebaseConfig = {
+    apiKey: "AIzaSyCglk3V54LGGB1pQh-a7n7ORcZr9WRKkSs",
+    authDomain: "infinte-windows.firebaseapp.com",
+    databaseURL: "https://infinte-windows.firebaseio.com",
+    projectId: "infinte-windows",
+    storageBucket: "infinte-windows.appspot.com",
+    messagingSenderId: "459978640925",
+    appId: "1:459978640925:web:cd038e2b4ce42f6714c0f4",
+    // measurementId: "G-9WQC0352TC"
+  };
+  firebase.initializeApp(firebaseConfig);
+  // firebase.analytics();
+  var db = firebase.database();
+  var drawingsRef = db.ref('drawings');
+  
+  const DRAWING_CANVAS_WIDTH = 400;
+  const DRAWING_CANVAS_HEIGHT = 600;
+</script>
+<script type="text/javascript" src="./editor.js"></script>
+<script type="text/javascript" src="./gl-helpers.js"></script>
+<script type="text/javascript" src="./windows.js"></script>
+<!-- <script type="text/javascript" src="./viewer.js"></script> -->
+</body>
+</html>
