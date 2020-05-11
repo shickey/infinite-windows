@@ -28,35 +28,31 @@ discardButton.addEventListener('click', function(e) {
 
 sendButton.addEventListener('click', function(e) {
   if (drawingExists) {
-    window.PointsToDraw = path;
-    window.DrawPointsWithGl();
+    // Normalize the color representations
+    ctx.fillStyle = backgroundColor;
+    let background = ctx.fillStyle;
+    ctx.fillStyle = penColor;
+    let pen = ctx.fillStyle;
+    
+    drawingsRef.push({
+      points: path,
+      backgroundColor: background,
+      penColor: pen
+    });
+    
+    path = [];
+    drawingExists = false;
+    discardButton.disabled = true;
+    sendButton.disabled = true;
   }
-  // if (drawingExists) {
-  //   // Normalize the color representations
-  //   ctx.fillStyle = backgroundColor;
-  //   let background = ctx.fillStyle;
-  //   ctx.fillStyle = penColor;
-  //   let pen = ctx.fillStyle;
-    
-  //   drawingsRef.push({
-  //     points: path,
-  //     backgroundColor: background,
-  //     penColor: pen
-  //   });
-    
-  //   path = [];
-  //   drawingExists = false;
-  //   discardButton.disabled = true;
-  //   sendButton.disabled = true;
-  // }
 });
 
 
 function distSq(x1, y1, x2, y2) {
   return ((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1));
 }
-
-canvas.addEventListener('mousedown', function(e) {
+  
+function mouseDown(e) {
   if (drawingExists) { return; }
   let x = e.offsetX;
   let y = e.offsetY;
@@ -93,37 +89,15 @@ canvas.addEventListener('mousedown', function(e) {
       path = [x, y];
     }
   }
-  
-  // if (!drawing) {
-  //   // Check to see if we should start drawing
-  //   if (distSq(x, y, 10, 150) < (10 * 10)) {
-  //     drawing = true;
-  //     path = [{x: 0, y: 150}];
-  //   }
-  // }
-  // else {
-  //   // Check if we should stop drawing
-  //   if (distSq(x, y, 590, 150) < (10 * 10)) {
-  //     drawing = false;
-  //     drawingExists = true;
-  //     path.push({x: 600, y: 150});
-  //     discardButton.disabled = false;
-  //     sendButton.disabled = false;
-  //   }
-  // }
-  
-  // if (drawing) {
-  //   path.push({x, y});
-  // }
-})
+};
 
-canvas.addEventListener('mousemove', function(e) {
+function mouseMove(e) {
   if (drawing) {
     path.push(e.offsetX, e.offsetY);
   }
-});
+};
 
-canvas.addEventListener('mouseup', function(e) {
+function mouseUp(e) {
   if (drawing) {
     path.push(e.offsetX, e.offsetY);
     drawing = false;
@@ -131,7 +105,14 @@ canvas.addEventListener('mouseup', function(e) {
     discardButton.disabled = false;
     sendButton.disabled = false;
   }
-});
+};
+
+canvas.addEventListener('mousedown', mouseDown);
+canvas.addEventListener('mousemove', mouseMove);
+canvas.addEventListener('mouseup', mouseUp);
+canvas.addEventListener('touchstart', mouseDown);
+canvas.addEventListener('touchmove', mouseMove);
+canvas.addEventListener('touchend', mouseUp);
 
 function draw() {
   ctx.fillStyle = backgroundColor;
@@ -177,17 +158,11 @@ function draw() {
   
   if (!drawing) {
     if (!drawingExists) {
-      // ctx.beginPath();
-      // ctx.arc(0, 150, 10, 0, 2 * Math.PI);
-      // ctx.fill();
       ctx.fillText('look out your window', 155, 170);
       ctx.fillText('click anywhere to start drawing what you see', 105, 190);
     }
   }
   else {
-    // ctx.beginPath();
-    // ctx.arc(600, 150, 10, 0, 2 * Math.PI);
-    // ctx.fill();
     ctx.fillText('click here to stop drawing', 480, 150);
   }
   
