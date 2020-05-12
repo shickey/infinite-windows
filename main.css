@@ -6,7 +6,7 @@ body {
   text-align: center;
   background-color: #222;
   color: #ccc;
-  font-family: Arial, sans-serif;
+  font-family: 'Merriweather', serif;
   font-size: 11px;
 }
 
@@ -53,6 +53,8 @@ canvas {
 
 #drawing-info-location {
   font-size: 12px;
+  font-style: italic;
+  font-weight: 300;
 }
 
 #thumbnails {
