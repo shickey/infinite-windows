@@ -4,30 +4,126 @@
 
 body {
   text-align: center;
-  background-color: #222;
+  background-color: #000;
   color: #ccc;
   font-family: 'Merriweather', serif;
   font-size: 11px;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
 }
 
 canvas {
   display: inline-block;
-  border: 2px solid #999;
   background-color: #000;
 }
 
-#editor-controls.hidden {
+textarea, input {
+  font-size: 3rem;
+  width: 80%;
+}
+
+#banner {
+  position: fixed;
+  background-color: black;
+  color: #ccc;
+  text-align: center;
+  width: 100%;
+  height: 100px; 
+  margin: 0;
+  padding: 0;
+}
+
+#banner h1 {
+  font-size: 40px;
+}
+
+#footer {
+  position: fixed;
+  display: flex;
+  bottom: 0;
+  background-color: black;
+  color: #ccc;
+  text-align: center;
+  width: 100%;
+  height: 120px; 
+  margin: 0;
+  padding: 0;
+}
+
+#footer button {
+  height: 100%;
+  width: 100%;
+  font-size: 30px;
+}
+
+#content {
+  width: 100vw;
+  height: 100vh;
+  padding-top: 100px;
+  padding-bottom: 120px;
+}
+
+.hidden {
   display: none;
 }
 
-#viewer {
-  margin-top: 40px;
+#editor-container {
+  position: relative;
+  height: 100%;
+  margin: auto;
+}
+
+#editor {
+  border: 1px solid #999;
+  height: 100%;
+  touch-action: none;
+}
+
+#submit-panel-container {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+#submit-panel-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  padding-top: 40px;
+  top: 0;
+  left: 0;
+  background-color: #aaa;
+  opacity: .5;
+}
+
+#submit-panel {
+  position: absolute;
+  width: 80%;
+  height: 80%;
+  top: 10%;
+  left: 10%;
+  background-color: black;
+  padding-top: 3em;
+}
+
+#submit-panel-buttons {
+  margin-top: 3em;
 }
 
 #viewer-container {
   position: relative;
-  width: 600px;
+  height: 100%;
   margin: auto;
+}
+
+#viewer {
+  height: 100%;
 }
 
 #drawing-info {
@@ -41,6 +137,7 @@ canvas {
   left: 25%;
   background-color: rgba(255, 255, 255, 0.2);
   padding: 10px;
+  z-index: 100;
 }
 
 #drawing-info.show {
@@ -48,31 +145,49 @@ canvas {
 }
 
 #drawing-info-caption {
-  font-size: 16px;
+  font-size: 30px;
 }
 
 #drawing-info-location {
-  font-size: 12px;
+  font-size: 20px;
   font-style: italic;
   font-weight: 300;
 }
 
-#thumbnails {
-  display: flex;
-  flex-wrap: wrap;
-  width: 600px;
-  min-height: 300px;
-  margin: 40px auto;
-  background-color: #999;
+
+/* Button nonsense */
+button {
+    display: inline-block;
+    border: none;
+    padding: 1rem 2rem;
+    margin: 0;
+    text-decoration: none;
+    background: #999;
+    color: #ffffff;
+    font-family: 'Merriweather', sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    text-align: center;
+    transition: background 250ms ease-in-out, 
+                transform 150ms ease;
+    -webkit-appearance: none;
+    -moz-appearance: none;
 }
 
-.thumbnail {
-  width: 180px;
-  height: 90px;
-  margin: 10px;
+button:hover {
+    background: #666;
 }
 
-.thumbnail > img {
-  width: 100%;
-  height: 100%;
+button:focus {
+    outline: 0px solid #fff;
+    outline-offset: -4px;
+}
+
+button:active {
+    transform: scale(0.99);
+}
+
+button:disabled, button[disabled] {
+  background: #333;
+  color: #aaa;
 }

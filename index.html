@@ -4,35 +4,54 @@
   <title>Collective Drawing Test</title>
 </head>
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="./normalize.css">
 <link rel="stylesheet" type="text/css" href="./main.css">
 <body>
+  <div id="banner">
+    <h2>Infinite Windows</h2>
+  </div>
   
-  <div id="editor-container">
-    <canvas id="editor" width="400" height="600"></canvas>
-    <div id="editor-controls" class="hidden">
-      <div>
-        <label for="caption">Say something about your drawing</label>
-        <input type="text" name="caption" id="caption">
+  <div id="content">
+    <div id="editor-container">
+      <canvas id="editor" width="400" height="600"></canvas>
+    </div>
+    
+    <div id="viewer-container">
+      <canvas id="viewer" width="600" height="800"></canvas>
+      <div id="drawing-info">
+        <div id="drawing-info-caption"></div>
+        <div id="drawing-info-location"></div>
       </div>
-      <div>
-        <label for="location">Where is this drawing?</label>
-        <input type="text" name="location" id="location">
-      </div>
-      <button id="discard">Discard</button>
-      <button id="send">Submit Your Window</button>
     </div>
   </div>
   
-  <div id="viewer-container">
-    <canvas id="viewer" width="600" height="800"></canvas>
-    <div id="drawing-info">
-      <div id="drawing-info-caption"></div>
-      <div id="drawing-info-location"></div>
-    </div>
+  <div id="footer">
+    <button id="add-button">Add Your Window</button>
+    
+    <button id="back-button">Back to Windows</button>
+    <button id="discard-button">Discard</button>
+    <button id="send-button">Submit Your Window</button>
   </div>
   
-  <!-- <canvas id="viewer" width="600" height="300"></canvas> -->
-  <!-- <div id="thumbnails"></div> -->
+  <div id="submit-panel-container">
+    <div id="submit-panel-overlay"></div>
+    <div id="submit-panel">
+      <div id="submit-panel-content">
+        <h1>Say something about your drawing</h1>
+        <div>
+          <textarea name="caption" rows="5" id="caption"></textarea>
+        </div>
+        <h1>Where is this?</h1>
+        <div>
+          <input type="text" name="location" id="location">
+        </div>
+        <div id="submit-panel-buttons">
+          <button id="cancel-button">Cancel</button>
+          <button id="submit-button">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <script src="https://www.gstatic.com/firebasejs/7.14.3/firebase-app.js"></script>
 <!-- <script src="https://www.gstatic.com/firebasejs/7.14.3/firebase-analytics.js"></script> -->
@@ -55,10 +74,44 @@
   
   const DRAWING_CANVAS_WIDTH = 400;
   const DRAWING_CANVAS_HEIGHT = 600;
+  
+  let editor = document.getElementById('editor-container');
+  let viewer = document.getElementById('viewer-container');
+  let submitPanel = document.getElementById('submit-panel-container');
+  let addButton = document.getElementById('add-button');
+  let backButton = document.getElementById('back-button');
+  let discardButton = document.getElementById('discard-button');
+  let sendButton = document.getElementById('send-button');
+  
+  function goToEditor() {
+    editor.classList.remove('hidden');
+    viewer.classList.add('hidden');
+    submitPanel.classList.add('hidden');
+    addButton.classList.add('hidden');
+    backButton.classList.remove('hidden');
+    discardButton.classList.remove('hidden');
+    sendButton.classList.remove('hidden');
+    discardButton.disabled = true;
+    sendButton.disabled = true;
+  }
+  
+  function goToViewer() {
+    editor.classList.add('hidden');
+    viewer.classList.remove('hidden');
+    submitPanel.classList.add('hidden');
+    addButton.classList.remove('hidden');
+    backButton.classList.add('hidden');
+    discardButton.classList.add('hidden');
+    sendButton.classList.add('hidden');
+  }
+  
+  addButton.addEventListener('click', goToEditor);
+  backButton.addEventListener('click', goToViewer);
+  
+  goToViewer();
 </script>
 <script type="text/javascript" src="./editor.js"></script>
 <script type="text/javascript" src="./gl-matrix-min.js"></script>
 <script type="text/javascript" src="./windows.js"></script>
-<!-- <script type="text/javascript" src="./viewer.js"></script> -->
 </body>
 </html>

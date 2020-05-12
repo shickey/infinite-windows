@@ -4,10 +4,14 @@ let canvas = document.getElementById('editor');
 let ctx = canvas.getContext('2d');
 
 let editorControls = document.getElementById('editor-controls');
-let discardButton = document.getElementById('discard');
-let sendButton = document.getElementById('send');
+let discardButton = document.getElementById('discard-button');
+let sendButton = document.getElementById('send-button');
+
+let submitPanel = document.getElementById('submit-panel-container');
 let captionField = document.getElementById('caption');
 let locationField = document.getElementById('location');
+let cancelButton = document.getElementById('cancel-button');
+let submitButton = document.getElementById('submit-button');
 
 let path = [];
 let drawing = false;
@@ -24,11 +28,45 @@ discardButton.addEventListener('click', function(e) {
   if (drawingExists) {
     path = [];
     drawingExists = false;
-    hideControls();
+    disableFooterButtons();
   }
 });
 
 sendButton.addEventListener('click', function(e) {
+  if (drawingExists) {
+    showSubmitPanel();
+  }
+});
+
+cancelButton.addEventListener('click', function(e) {
+  hideSubmitPanel();
+});
+
+submitButton.addEventListener('click', function(e) {
+  submitDrawing();
+});
+
+function disableFooterButtons() {
+  sendButton.disabled = true;
+  discardButton.disabled = true;
+}
+
+function enableFooterButtons() {
+  sendButton.disabled = false;
+  discardButton.disabled = false;
+}
+
+function showSubmitPanel() {
+  captionField.value = '';
+  locationField.value = '';
+  submitPanel.classList.remove('hidden');
+}
+
+function hideSubmitPanel() {
+  submitPanel.classList.add('hidden');
+}
+
+function submitDrawing() {
   if (drawingExists) {
     // Normalize the color representations
     ctx.fillStyle = backgroundColor;
@@ -46,18 +84,9 @@ sendButton.addEventListener('click', function(e) {
     
     path = [];
     drawingExists = false;
-    hideControls();
+    hideSubmitPanel();
+    disableFooterButtons();
   }
-});
-
-function hideControls() {
-  captionField.value = '';
-  locationField.value = '';
-  editorControls.classList.add('hidden');
-}
-
-function showControls() {
-  editorControls.classList.remove('hidden');
 }
 
 function distSq(x1, y1, x2, y2) {
@@ -65,9 +94,13 @@ function distSq(x1, y1, x2, y2) {
 }
   
 function mouseDown(e) {
+  e.preventDefault();
+  e.stopPropagation();
   if (drawingExists) { return; }
-  let x = e.offsetX;
-  let y = e.offsetY;
+  let scale = DRAWING_CANVAS_WIDTH / canvas.clientWidth;
+  var rect = e.target.getBoundingClientRect();
+  let x = (e.clientX - rect.left) * scale;
+  let y = (e.clientY - rect.top) * scale;
   
   if (!drawing) {
     // Check for color selection
@@ -104,26 +137,53 @@ function mouseDown(e) {
 };
 
 function mouseMove(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  let scale = DRAWING_CANVAS_WIDTH / canvas.clientWidth;
+  var rect = e.target.getBoundingClientRect();
+  let x = (e.clientX - rect.left) * scale;
+  let y = (e.clientY - rect.top) * scale;
   if (drawing) {
-    path.push(e.offsetX, e.offsetY);
+    path.push(x, y);
   }
 };
 
 function mouseUp(e) {
+  e.preventDefault();
+  e.stopPropagation();
   if (drawing) {
-    path.push(e.offsetX, e.offsetY);
     drawing = false;
     drawingExists = true;
-    showControls();
+    enableFooterButtons();
   }
 };
 
 canvas.addEventListener('mousedown', mouseDown);
 canvas.addEventListener('mousemove', mouseMove);
 canvas.addEventListener('mouseup', mouseUp);
-canvas.addEventListener('touchstart', mouseDown);
-canvas.addEventListener('touchmove', mouseMove);
-canvas.addEventListener('touchend', mouseUp);
+
+canvas.addEventListener('touchstart', function(e) {
+  var touch = e.touches[0];
+  var mouseEvent = new MouseEvent('mousedown', {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  });
+  canvas.dispatchEvent(mouseEvent);
+}, false);
+
+canvas.addEventListener('touchmove', function(e) {
+  var touch = e.touches[0];
+  var mouseEvent = new MouseEvent('mousemove', {
+    clientX: touch.clientX,
+    clientY: touch.clientY
+  });
+  canvas.dispatchEvent(mouseEvent);
+}, false);
+
+canvas.addEventListener('touchend', function(e) {
+  var mouseEvent = new MouseEvent('mouseup', {});
+  canvas.dispatchEvent(mouseEvent);
+}, false);
 
 function draw() {
   ctx.fillStyle = backgroundColor;
