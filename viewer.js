@@ -72,7 +72,7 @@ drawingsRef.once('value', function(snapshot) {
     createThumbnailFromDrawing(drawing);
     nextDrawingsQueue.push(drawing);
   });
-})
+});
 
 
 ctx.lineWidth = 2.0;
