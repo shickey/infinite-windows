@@ -290,11 +290,13 @@
     MOVE: 'MOVE'
   }
   
-  let currentSimState = SimState.DRAW;
+  let currentSimState = SimState.MOVE;
   
   let currentDrawing = null;
   let currentWaitTime = null;
   let currentMoveAnim = null;
+  
+  let nextDrawing = null;
   
   function simulate(gl, dt) {
     renderQueue = [];
@@ -302,13 +304,21 @@
       return;
     }
     
-    // return;
+    if (!nextDrawing) {
+      nextDrawing = drawingBuffers[getRandomInt(drawingBuffers.length)];
+    }
+    
+    let penAlpha = 1.0;
+    let backgroundAlpha = 1.0;
+    let backgroundR = 0;
+    let backgroundG = 0;
+    let backgroundB = 0;
     
     switch (currentSimState) {
       case SimState.DRAW: {
         if (currentDrawing === null) {
           currentDrawing = {
-            drawing: drawingBuffers[getRandomInt(drawingBuffers.length)],
+            drawing: nextDrawing,
             currentTime: 0,
             totalTime: DRAW_TIME
           };
@@ -316,6 +326,11 @@
         
         if (currentDrawing) {
           let drawingBuffer = currentDrawing.drawing;
+          let backgroundColor = drawingBuffer.backgroundColor;
+          backgroundR = backgroundColor.r;
+          backgroundG = backgroundColor.g;
+          backgroundB = backgroundColor.b;
+          
           let t = clamp(currentDrawing.currentTime / currentDrawing.totalTime, 0, 1.0);
           let numPointsToDraw = clamp(Math.floor(t * drawingBuffer.count), 0, drawingBuffer.count);
           if (numPointsToDraw > 0) {
@@ -323,7 +338,8 @@
               buffer: drawingBuffer.bufferObj,
               lineColor: drawingBuffer.penColor,
               count: numPointsToDraw,
-              modelViewMatrix: modelView
+              modelViewMatrix: modelView,
+              alpha: penAlpha,
             });
           }
           currentDrawing.currentTime += dt;
@@ -366,6 +382,7 @@
             let infoBox = document.getElementById('drawing-info');
             infoBox.classList.remove('show');
           }
+          
           currentWaitTime += dt;
           if (currentWaitTime > WAIT_TIME) {
             currentWaitTime = null;
@@ -373,11 +390,17 @@
           }
         }
         let drawingBuffer = currentDrawing.drawing;
+        let backgroundColor = drawingBuffer.backgroundColor;
+        backgroundR = backgroundColor.r;
+        backgroundG = backgroundColor.g;
+        backgroundB = backgroundColor.b;
+        
         renderQueue.push({
           buffer: drawingBuffer.bufferObj,
           lineColor: drawingBuffer.penColor,
           count: drawingBuffer.count,
-          modelViewMatrix: modelView
+          modelViewMatrix: modelView,
+          alpha: penAlpha,
         });
         break;
       }
@@ -412,6 +435,15 @@
             let t = clamp(currentTime / totalTime, 0, 1.0);
             if (t < 0.25) {
               // Zoom out
+              if (currentDrawing) {
+                let backgroundColor = currentDrawing.drawing.backgroundColor;
+                backgroundR = backgroundColor.r;
+                backgroundG = backgroundColor.g;
+                backgroundB = backgroundColor.b;
+              }
+              
+              penAlpha = 1.0 - (t * 4);
+              backgroundAlpha = 1.0 - (t * 4);
               let subT = t * 4;
               viewBounds = {
                 l: -300 - (subT * 300),
@@ -421,7 +453,12 @@
               };
             }
             else if (t < 0.75) {
+              // Pick a next drawing
+              nextDrawing = drawingBuffers[getRandomInt(drawingBuffers.length)];
+
               // Move
+              penAlpha = 0;
+              backgroundAlpha = 0;
               let subT = (t - 0.25) * 2;
               viewBounds = {
                 l: -600 + (subT * x),
@@ -431,7 +468,14 @@
               };
             }
             else {
+              let backgroundColor = nextDrawing.backgroundColor;
+              backgroundR = backgroundColor.r;
+              backgroundG = backgroundColor.g;
+              backgroundB = backgroundColor.b;
+              
               // Zoom in
+              penAlpha = 0;
+              backgroundAlpha = (t - 0.75) * 4;
               let subT = (t - 0.75) * 4;
               viewBounds = {
                 l: -600 + (subT * 300),
@@ -447,11 +491,13 @@
         }
         if (currentDrawing !== null) {
           let drawingBuffer = currentDrawing.drawing;
+          
           renderQueue.push({
             buffer: drawingBuffer.bufferObj,
             lineColor: drawingBuffer.penColor,
             count: drawingBuffer.count,
-            modelViewMatrix: modelView
+            modelViewMatrix: modelView,
+            alpha: penAlpha,
           });
         }
         break;
@@ -497,25 +543,40 @@
           // Left
             (minX - 30),  (minY - 30),  0.15, 0.15, 0.15, 1.0,
             (minX - 30),  (maxY + 30),  0.15, 0.15, 0.15, 1.0,
-                             (midX + 100),         midY,  0.15, 0.15, 0.15, 1.0,
+           (midX + 100),         midY,  0.15, 0.15, 0.15, 1.0,
                              
-          // Lower-left pane          
-                   minX, minY,    (midX === 0 && midY == 0 ? 1 : 0),   0,   0, 1.0,
-                   minX, maxY,    0,   (midX === 0 && midY == 0 ? 1 : 0),   0, 1.0,
-                   maxX, minY,    0,   0,   (midX === 0 && midY == 0 ? 1 : 0), 1.0,
+          // Upper-left pane          
+                   minX, minY,    0, 0, 0, 1.0,
+                   minX, maxY,    0, 0, 0, 1.0,
+                   maxX, minY,    0, 0, 0, 1.0,
                    
-          // Upper-right pane 
-                   minX, maxY,    0,   0,   0, 1.0,
-                   maxX, minY,    0,   0,   0, 1.0,
-                   maxX, maxY,    0,   0,   0, 1.0,]
+          // Lower-right pane 
+                   minX, maxY,    0, 0, 0, 1.0,
+                   maxX, minY,    0, 0, 0, 1.0,
+                   maxX, maxY,    0, 0, 0, 1.0,]
         );
+        
+        if (midX === 0 && midY === 0) {
+          // Overlay with current background color (just push more triangles on top)
+          windowVerts = windowVerts.concat([
+            // Upper-left pane          
+                     minX, minY,    backgroundR, backgroundG, backgroundB, backgroundAlpha,
+                     minX, maxY,    backgroundR, backgroundG, backgroundB, backgroundAlpha,
+                     maxX, minY,    backgroundR, backgroundG, backgroundB, backgroundAlpha,
+                     
+            // Lower-right pane 
+                     minX, maxY,    backgroundR, backgroundG, backgroundB, backgroundAlpha,
+                     maxX, minY,    backgroundR, backgroundG, backgroundB, backgroundAlpha,
+                     maxX, maxY,    backgroundR, backgroundG, backgroundB, backgroundAlpha,]
+          );
+        }
         
       }
     }
     
     gl.bindBuffer(gl.ARRAY_BUFFER, windowBuffer.bufferObj);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(windowVerts), gl.STATIC_DRAW);
-    windowBuffer.count = (18 * numWindowsX * numWindowsY);
+    windowBuffer.count = (windowVerts.length / 6);
     
   }
   
@@ -592,7 +653,7 @@
     // }
     
     {
-      // Draw window mask
+      // Draw window masks
       let shader = shaders.simple
       
       {
@@ -647,17 +708,6 @@
       gl.disableVertexAttribArray(shader.attribLocations.vertexColor);
     }
     
-    let alpha = 1.0;
-    if (currentSimState === SimState.MOVE && currentMoveAnim) {
-      let t = currentMoveAnim.currentTime / currentMoveAnim.totalTime;
-      if (t < 0.25) {
-        alpha = 1.0 - (t * 4);
-      }
-      else {
-        alpha = 0;
-      }
-    }
-    
     renderQueue.forEach(entry => {
       let shader = shaders.line;
       // Tell WebGL how to pull out the positions from the position
@@ -690,7 +740,7 @@
           entry.modelViewMatrix);
       gl.uniform4fv(
         shader.uniformLocations.lineColor,
-        [entry.lineColor.r, entry.lineColor.g, entry.lineColor.b, alpha] // white
+        [entry.lineColor.r, entry.lineColor.g, entry.lineColor.b, entry.alpha] // white
       );
 
       {

@@ -26,6 +26,8 @@ canvas {
 
 #viewer-container {
   position: relative;
+  width: 600px;
+  margin: auto;
 }
 
 #drawing-info {
