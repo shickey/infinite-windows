@@ -54,7 +54,7 @@
   </div>
 
 <script src="https://www.gstatic.com/firebasejs/7.14.3/firebase-app.js"></script>
-<!-- <script src="https://www.gstatic.com/firebasejs/7.14.3/firebase-analytics.js"></script> -->
+<script src="https://www.gstatic.com/firebasejs/7.14.3/firebase-analytics.js"></script>
 <script src="https://www.gstatic.com/firebasejs/7.14.3/firebase-database.js"></script>
 <script type="text/javascript">
   var firebaseConfig = {
@@ -65,10 +65,10 @@
     storageBucket: "infinte-windows.appspot.com",
     messagingSenderId: "459978640925",
     appId: "1:459978640925:web:cd038e2b4ce42f6714c0f4",
-    // measurementId: "G-9WQC0352TC"
+    measurementId: "G-9WQC0352TC"
   };
   firebase.initializeApp(firebaseConfig);
-  // firebase.analytics();
+  firebase.analytics();
   var db = firebase.database();
   var drawingsRef = db.ref('drawings');
   
