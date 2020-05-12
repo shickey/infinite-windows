@@ -3,8 +3,11 @@
 let canvas = document.getElementById('editor');
 let ctx = canvas.getContext('2d');
 
+let editorControls = document.getElementById('editor-controls');
 let discardButton = document.getElementById('discard');
 let sendButton = document.getElementById('send');
+let captionField = document.getElementById('caption');
+let locationField = document.getElementById('location');
 
 let path = [];
 let drawing = false;
@@ -21,8 +24,7 @@ discardButton.addEventListener('click', function(e) {
   if (drawingExists) {
     path = [];
     drawingExists = false;
-    discardButton.disabled = true;
-    sendButton.disabled = true;
+    hideControls();
   }
 });
 
@@ -37,16 +39,26 @@ sendButton.addEventListener('click', function(e) {
     drawingsRef.push({
       points: path,
       backgroundColor: background,
-      penColor: pen
+      penColor: pen,
+      caption: captionField.value,
+      location: locationField.value
     });
     
     path = [];
     drawingExists = false;
-    discardButton.disabled = true;
-    sendButton.disabled = true;
+    hideControls();
   }
 });
 
+function hideControls() {
+  captionField.value = '';
+  locationField.value = '';
+  editorControls.classList.add('hidden');
+}
+
+function showControls() {
+  editorControls.classList.remove('hidden');
+}
 
 function distSq(x1, y1, x2, y2) {
   return ((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1));
@@ -102,8 +114,7 @@ function mouseUp(e) {
     path.push(e.offsetX, e.offsetY);
     drawing = false;
     drawingExists = true;
-    discardButton.disabled = false;
-    sendButton.disabled = false;
+    showControls();
   }
 };
 

@@ -2,9 +2,9 @@
   
   let { mat4 } = glMatrix;
   
-  let DRAW_TIME = 2000; // ms
-  let WAIT_TIME = 2000;
-  let MOVE_TIME = 8000;
+  let DRAW_TIME = 1000; // ms
+  let WAIT_TIME = 5000;
+  let MOVE_TIME = 3000;
   
   var drawingBuffers = [];
   let backgroundBuffers = {};
@@ -80,12 +80,12 @@
         uniform mat4 uModelViewMatrix;
         uniform mat4 uProjectionMatrix;
         
-        uniform vec4 uVertexColor;
+        uniform vec4 lineColor;
         
         varying lowp vec4 vColor;
         void main(void) {
           gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-          vColor = uVertexColor;
+          vColor = lineColor;
         }
       `;
 
@@ -107,7 +107,7 @@
         uniformLocations: {
           projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
           modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-          vertexColor: gl.getUniformLocation(shaderProgram, 'uVertexColor'),
+          lineColor: gl.getUniformLocation(shaderProgram, 'lineColor'),
         },
       };
       
@@ -264,7 +264,11 @@
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(drawing.points), gl.STATIC_DRAW);
     return {
       bufferObj: buffer,
-      count: drawing.points.length / 2
+      count: drawing.points.length / 2,
+      penColor: hexToRgb(drawing.penColor),
+      backgroundColor: hexToRgb(drawing.backgroundColor),
+      caption: drawing.caption,
+      location: drawing.location
     };
   }
   
@@ -317,6 +321,7 @@
           if (numPointsToDraw > 0) {
             renderQueue.push({
               buffer: drawingBuffer.bufferObj,
+              lineColor: drawingBuffer.penColor,
               count: numPointsToDraw,
               modelViewMatrix: modelView
             });
@@ -333,6 +338,34 @@
           currentWaitTime = 0;
         }
         else {
+          if (currentWaitTime < 250 && currentWaitTime + dt > 250) {
+            // Show caption
+            let drawing = currentDrawing.drawing;
+            if (drawing.caption || drawing.location) {
+              let captionTextDiv = document.getElementById('drawing-info-caption');
+              let locationTextDiv = document.getElementById('drawing-info-location');
+              if (drawing.caption) {
+                captionTextDiv.textContent = drawing.caption;
+              }
+              else {
+                captionTextDiv.textContent = '';
+              }
+              
+              if (drawing.location) {
+                locationTextDiv.textContent = drawing.location;
+              }
+              else {
+                locationTextDiv.textContent = '';
+              }
+              
+              let infoBox = document.getElementById('drawing-info');
+              infoBox.classList.add('show');
+            }
+          }
+          else if (currentWaitTime < WAIT_TIME - 1250 && currentWaitTime + dt > WAIT_TIME - 1250) {
+            let infoBox = document.getElementById('drawing-info');
+            infoBox.classList.remove('show');
+          }
           currentWaitTime += dt;
           if (currentWaitTime > WAIT_TIME) {
             currentWaitTime = null;
@@ -342,6 +375,7 @@
         let drawingBuffer = currentDrawing.drawing;
         renderQueue.push({
           buffer: drawingBuffer.bufferObj,
+          lineColor: drawingBuffer.penColor,
           count: drawingBuffer.count,
           modelViewMatrix: modelView
         });
@@ -415,6 +449,7 @@
           let drawingBuffer = currentDrawing.drawing;
           renderQueue.push({
             buffer: drawingBuffer.bufferObj,
+            lineColor: drawingBuffer.penColor,
             count: drawingBuffer.count,
             modelViewMatrix: modelView
           });
@@ -465,9 +500,9 @@
                              (midX + 100),         midY,  0.15, 0.15, 0.15, 1.0,
                              
           // Lower-left pane          
-                   minX, minY,    0,   0,   0, 1.0,
-                   minX, maxY,    0,   0,   0, 1.0,
-                   maxX, minY,    0,   0,   0, 1.0,
+                   minX, minY,    (midX === 0 && midY == 0 ? 1 : 0),   0,   0, 1.0,
+                   minX, maxY,    0,   (midX === 0 && midY == 0 ? 1 : 0),   0, 1.0,
+                   maxX, minY,    0,   0,   (midX === 0 && midY == 0 ? 1 : 0), 1.0,
                    
           // Upper-right pane 
                    minX, maxY,    0,   0,   0, 1.0,
@@ -654,8 +689,8 @@
           false,
           entry.modelViewMatrix);
       gl.uniform4fv(
-        shader.uniformLocations.vertexColor,
-        [1.0, 1.0, 1.0, alpha] // white
+        shader.uniformLocations.lineColor,
+        [entry.lineColor.r, entry.lineColor.g, entry.lineColor.b, alpha] // white
       );
 
       {
@@ -744,6 +779,63 @@
   
   function lerp(start, finish, t) {
     return ((finish - start) * t) + start;
+  }
+  
+  function hexRGBtoHSL(hex) {
+    if (hex.startsWith('#')) {
+      hex = hex.slice(1);
+    }
+    hexInt = parseInt(hex, 16);
+    
+    let r = ((hexInt >> 16) & 0xFF) / 255.0;
+    let g = ((hexInt >>  8) & 0xFF) / 255.0;
+    let b = ((hexInt      ) & 0xFF) / 255.0;
+    
+    let colMax = Math.max(r, g, b);
+    let colMin = Math.min(r, g, b);
+    
+    let v = colMax;
+    let c = colMax - colMin;
+    let l = (colMax + colMin) / 2.0;
+    
+    let hue = 0;
+    if (c !== 0) {
+      if (v === r) {
+        hue = 60 * ((g - b) / c);
+      }
+      else if (v === g) {
+        hue = 60 * (2 + ((b - r) / c));
+      }
+      else {
+        hue = 60 * (4 + ((r - g) / c));
+      }
+    }
+    
+    let sat = 0;
+    if (l !== 0 && l !== 1) {
+      sat = c / (1 - Math.abs((2 * v) - c - 1));
+    }
+    
+    return {
+      h: clamp(Math.round(hue), 0, 360),
+      s: clamp(Math.round(sat * 100), 0, 100),
+      l: clamp(Math.round(l * 100), 0, 100)
+    };
+  }
+  
+  function hexToRgb(hex) {
+    if (hex.startsWith('#')) {
+      hex = hex.slice(1);
+    }
+    hexInt = parseInt(hex, 16);
+    
+    let r = ((hexInt >> 16) & 0xFF) / 255.0;
+    let g = ((hexInt >>  8) & 0xFF) / 255.0;
+    let b = ((hexInt      ) & 0xFF) / 255.0;
+    
+    return {
+      r, g, b
+    };
   }
   
   main();

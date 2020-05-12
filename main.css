@@ -1,6 +1,13 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   text-align: center;
   background-color: #222;
+  color: #ccc;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
 }
 
 canvas {
@@ -9,12 +16,41 @@ canvas {
   background-color: #000;
 }
 
-#editor {
-  
+#editor-controls.hidden {
+  display: none;
 }
 
 #viewer {
   margin-top: 40px;
+}
+
+#viewer-container {
+  position: relative;
+}
+
+#drawing-info {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 1.0s ease;
+  width: 50%;
+  margin: 0 auto;
+  text-align: center;
+  top: 70%;
+  left: 25%;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 10px;
+}
+
+#drawing-info.show {
+  opacity: 1;
+}
+
+#drawing-info-caption {
+  font-size: 16px;
+}
+
+#drawing-info-location {
+  font-size: 12px;
 }
 
 #thumbnails {

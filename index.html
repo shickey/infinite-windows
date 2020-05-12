@@ -8,14 +8,26 @@
   
   <div id="editor-container">
     <canvas id="editor" width="400" height="600"></canvas>
-    <div class="editor-controls">
-      <button id="discard" disabled>Discard</button>
-      <button id="send" disabled>Submit Your Window</button>
+    <div id="editor-controls" class="hidden">
+      <div>
+        <label for="caption">Say something about your drawing</label>
+        <input type="text" name="caption" id="caption">
+      </div>
+      <div>
+        <label for="location">Where is this drawing?</label>
+        <input type="text" name="location" id="location">
+      </div>
+      <button id="discard">Discard</button>
+      <button id="send">Submit Your Window</button>
     </div>
   </div>
   
   <div id="viewer-container">
     <canvas id="viewer" width="600" height="800"></canvas>
+    <div id="drawing-info">
+      <div id="drawing-info-caption"></div>
+      <div id="drawing-info-location"></div>
+    </div>
   </div>
   
   <!-- <canvas id="viewer" width="600" height="300"></canvas> -->
